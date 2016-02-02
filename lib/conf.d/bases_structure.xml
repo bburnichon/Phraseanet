@@ -3586,16 +3586,59 @@
         </indexes>
         <engine>InnoDB</engine>
       </table>
+      <table name="storage_zones">
+        <fields>
+          <field>
+            <name>id</name>
+            <type>int(11) unsigned</type>
+            <null></null>
+            <extra>auto_increment</extra>
+            <default></default>
+            <comment></comment>
+          </field>
+          <field>
+            <name>type</name>
+            <type>varchar(255)</type>
+            <null></null>
+            <extra></extra>
+            <default></default>
+            <comment></comment>
+            <collation>utf8_bin</collation>
+          </field>
+          <field>
+            <name>configuration</name>
+            <type>longtext</type>
+            <null></null>
+            <extra></extra>
+            <default></default>
+            <comment></comment>
+            <collation>utf8_bin</collation>
+          </field>
+        </fields>
+        <indexes>
+          <index>
+            <name>PRIMARY</name>
+            <type>PRIMARY</type>
+            <fields>
+              <field>id</field>
+            </fields>
+          </index>
+          <index>
+            <name>storage_zone_type</name>
+            <type>INDEX</type>
+            <fields>
+              <field>type</field>
+            </fields>
+          </index>
+        </indexes>
+      </table>
       <table name="subdef">
-
         <fields>
           <field>
             <name>subdef_id</name>
             <type>int(11) unsigned</type>
             <null></null>
             <extra>auto_increment</extra>
-
-
             <default></default>
             <comment></comment>
           </field>
@@ -3604,50 +3647,47 @@
             <type>int(11) unsigned</type>
             <null></null>
             <extra></extra>
-
-
             <default>0</default>
             <comment></comment>
           </field>
           <field>
             <name>name</name>
             <type>char(64)</type>
-
             <null></null>
             <extra></extra>
-
             <default></default>
             <comment></comment>
             <collation>ascii_bin</collation>
           </field>
           <field>
+            <name>storage_zone_id</name>
+            <type>int(11) unsigned</type>
+            <null></null>
+            <extra></extra>
+            <default>0</default>
+            <comment></comment>
+          </field>
+          <field>
             <name>path</name>
-
             <type>char(255)</type>
             <null></null>
             <extra></extra>
-
             <default></default>
             <comment></comment>
           </field>
           <field>
-
             <name>file</name>
             <type>char(255)</type>
             <null></null>
             <extra></extra>
-
             <default></default>
             <comment></comment>
           </field>
-
           <field>
             <name>width</name>
             <type>int(10) unsigned</type>
             <null></null>
             <extra></extra>
-
-
             <default>0</default>
             <comment></comment>
           </field>
@@ -3655,29 +3695,23 @@
             <name>height</name>
             <type>int(10) unsigned</type>
             <null></null>
-
             <extra></extra>
-
             <default>0</default>
             <comment></comment>
           </field>
           <field>
             <name>mime</name>
             <type>char(64)</type>
-
             <null></null>
             <extra></extra>
-
             <default></default>
             <comment></comment>
           </field>
           <field>
             <name>size</name>
-
             <type>bigint(20) unsigned</type>
             <null></null>
             <extra></extra>
-
             <default>0</default>
             <comment></comment>
           </field>
@@ -3686,9 +3720,7 @@
             <type>tinyint(1) unsigned</type>
             <null></null>
             <extra></extra>
-
             <default>0</default>
-
             <comment></comment>
           </field>
           <field>
@@ -3696,9 +3728,7 @@
             <type>char(32)</type>
             <null>YES</null>
             <extra></extra>
-
             <default></default>
-
             <comment></comment>
           </field>
           <field>
@@ -3706,9 +3736,7 @@
             <type>tinyint(1) unsigned</type>
             <null></null>
             <extra></extra>
-
             <default>0</default>
-
             <comment></comment>
           </field>
           <field>
