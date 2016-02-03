@@ -128,7 +128,9 @@ class databox_subdefsStructure implements IteratorAggregate, Countable
                         continue;
                 }
 
-                $avSubdefs[$subdefgroup_name][$subdef_name] = new databox_subdef($type, $sd, $this->translator);
+                $subdef = new databox_subdef($type, $sd, $this->translator);
+                $subdef->setStorageZoneRepository($this->databox->get)
+                $avSubdefs[$subdefgroup_name][$subdef_name] = $subdef;
             }
         }
         $this->AvSubdefs = $avSubdefs;

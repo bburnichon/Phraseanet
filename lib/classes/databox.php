@@ -1,5 +1,4 @@
 <?php
-
 /*
  * This file is part of Phraseanet
  *
@@ -12,6 +11,15 @@
 use Alchemy\Phrasea\Application;
 use Alchemy\Phrasea\Collection\CollectionRepositoryRegistry;
 use Alchemy\Phrasea\Core\Connection\ConnectionSettings;
+use Alchemy\Phrasea\Core\Event\Databox\CreatedEvent;
+use Alchemy\Phrasea\Core\Event\Databox\DataboxEvents;
+use Alchemy\Phrasea\Core\Event\Databox\DeletedEvent;
+use Alchemy\Phrasea\Core\Event\Databox\MountedEvent;
+use Alchemy\Phrasea\Core\Event\Databox\ReindexAskedEvent;
+use Alchemy\Phrasea\Core\Event\Databox\StructureChangedEvent;
+use Alchemy\Phrasea\Core\Event\Databox\ThesaurusChangedEvent;
+use Alchemy\Phrasea\Core\Event\Databox\TouChangedEvent;
+use Alchemy\Phrasea\Core\Event\Databox\UnmountedEvent;
 use Alchemy\Phrasea\Core\PhraseaTokens;
 use Alchemy\Phrasea\Core\Thumbnail\ThumbnailedElement;
 use Alchemy\Phrasea\Core\Version\DataboxVersionRepository;
@@ -23,20 +31,10 @@ use Alchemy\Phrasea\Status\StatusStructure;
 use Alchemy\Phrasea\Status\StatusStructureFactory;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\Statement;
-use Symfony\Component\Filesystem\Filesystem;
+use League\Flysystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Translation\TranslatorInterface;
-
-use Alchemy\Phrasea\Core\Event\Databox\DataboxEvents;
-use Alchemy\Phrasea\Core\Event\Databox\CreatedEvent;
-use Alchemy\Phrasea\Core\Event\Databox\DeletedEvent;
-use Alchemy\Phrasea\Core\Event\Databox\MountedEvent;
-use Alchemy\Phrasea\Core\Event\Databox\ReindexAskedEvent;
-use Alchemy\Phrasea\Core\Event\Databox\StructureChangedEvent;
-use Alchemy\Phrasea\Core\Event\Databox\ThesaurusChangedEvent;
-use Alchemy\Phrasea\Core\Event\Databox\TouChangedEvent;
-use Alchemy\Phrasea\Core\Event\Databox\UnmountedEvent;
 
 
 class databox extends base implements ThumbnailedElement
@@ -170,9 +168,9 @@ class databox extends base implements ThumbnailedElement
         $n = 0;
         do {
             $pathout = sprintf('%s%s%05d', $repository_path, $comp, $n++);
-        } while (is_dir($pathout) && iterator_count(new DirectoryIterator($pathout)) > 100);
+        } while (count($filesystem->listPaths($pathout)) > 100);
 
-        $filesystem->mkdir($pathout, 0750);
+        $filesystem->createDir($pathout);
 
         return $pathout . DIRECTORY_SEPARATOR;
     }

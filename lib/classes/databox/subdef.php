@@ -1,5 +1,4 @@
 <?php
-
 /*
  * This file is part of Phraseanet
  *
@@ -9,6 +8,8 @@
  * file that was distributed with this source code.
  */
 
+use Alchemy\Phrasea\DataStorage\StorageZone;
+use Alchemy\Phrasea\DataStorage\StorageZoneRepository;
 use Alchemy\Phrasea\Media\Subdef\Image;
 use Alchemy\Phrasea\Media\Subdef\Audio;
 use Alchemy\Phrasea\Media\Subdef\Video;
@@ -30,9 +31,20 @@ class databox_subdef
     protected $class;
     protected $devices = [];
     protected $name;
-    protected $path;
     protected $subdef_group;
     protected $labels = [];
+
+    /**
+     * @var StorageZoneRepository
+     */
+    private $storageZoneRepository;
+
+    private $storageZoneId;
+
+    /**
+     * @var StorageZone
+     */
+    private $storageZone;
 
     /**
      * @var bool
@@ -40,6 +52,7 @@ class databox_subdef
     private $requiresMetadataUpdate;
     protected $downloadable;
     protected $translator;
+
     protected static $mediaTypeToSubdefTypes = [
         SubdefType::TYPE_AUDIO => [SubdefSpecs::TYPE_IMAGE, SubdefSpecs::TYPE_AUDIO],
         SubdefType::TYPE_DOCUMENT => [SubdefSpecs::TYPE_IMAGE, SubdefSpecs::TYPE_FLEXPAPER],
@@ -47,7 +60,6 @@ class databox_subdef
         SubdefType::TYPE_IMAGE => [SubdefSpecs::TYPE_IMAGE],
         SubdefType::TYPE_VIDEO => [SubdefSpecs::TYPE_IMAGE, SubdefSpecs::TYPE_VIDEO, SubdefSpecs::TYPE_ANIMATION],
     ];
-
     const CLASS_THUMBNAIL = 'thumbnail';
     const CLASS_PREVIEW = 'preview';
     const CLASS_DOCUMENT = 'document';
@@ -58,13 +70,6 @@ class databox_subdef
     const DEVICE_SCREEN = 'screen';
     const DEVICE_TV = 'tv';
 
-    /**
-     *
-     * @param SubdefType       $type
-     * @param SimpleXMLElement $sd
-     *
-     * @return databox_subdef
-     */
     public function __construct(SubdefType $type, SimpleXMLElement $sd, TranslatorInterface $translator)
     {
         $this->subdef_group = $type;
@@ -77,7 +82,8 @@ class databox_subdef
 
         $this->name = strtolower($sd->attributes()->name);
         $this->downloadable = p4field::isyes($sd->attributes()->downloadable);
-        $this->path = trim($sd->path) !== '' ? p4string::addEndSlash(trim($sd->path)) : '';
+        $storageZoneId = trim($sd->{'storage-zone-id'});
+        $this->storageZoneId = $storageZoneId !== '' ? (int)$storageZoneId : null;
 
         $this->requiresMetadataUpdate = p4field::isyes((string) $sd->meta);
 
@@ -107,8 +113,6 @@ class databox_subdef
                 $this->subdef_type = $this->buildFlexPaperSubdef($sd);
                 break;
         }
-
-        return $this;
     }
 
     /**
@@ -120,13 +124,44 @@ class databox_subdef
         return $this->class;
     }
 
+    public function setStorageZoneRepository(StorageZoneRepository $storageZoneRepository)
+    {
+        $this->storageZoneRepository = $storageZoneRepository;
+    }
+
     /**
-     *
      * @return string
+     * @deprecated Subdefs are not always stored on local filesystem, use {@see self::getStorageZone()} instead.
      */
     public function get_path()
     {
-        return $this->path;
+        $storageZone = $this->getStorageZone();
+        if ('local' !== $storageZone->getType()) {
+            throw new RuntimeException('Invalid storage zone type');
+        }
+
+        $configuration = $storageZone->getConfiguration();
+
+        return isset($configuration['path']) ? $configuration['path'] : '';
+    }
+
+    public function getStorageZone()
+    {
+        if ($this->storageZone) {
+            return $this->storageZone;
+        }
+
+        if (!$this->storageZoneRepository) {
+            throw new LogicException('storageZoneRepository was not set');
+        }
+
+        $this->storageZone = $this->storageZoneRepository->find($this->storageZoneId);
+
+        if (!$this->storageZone instanceof StorageZone) {
+            throw new RuntimeException(sprintf('Storage zone %d was not found', $this->storageZoneId));
+        }
+
+        return $this->storageZone;
     }
 
     /**
