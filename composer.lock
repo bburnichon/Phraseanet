@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "51c6f036a5c4458c3745218d7a826c16",
-    "content-hash": "8d0505b59a415d5f0c8f62fbf0fcfcb8",
+    "hash": "61987e243e50c4ad5ac0a49a69aea83a",
+    "content-hash": "cec42d7db9361180f5eca88491e7f2bf",
     "packages": [
         {
             "name": "alchemy-fr/tcpdf-clone",
@@ -587,16 +587,16 @@
         },
         {
             "name": "alchemy/task-manager",
-            "version": "dev-master",
+            "version": "2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/alchemy-fr/task-manager.git",
-                "reference": "cefd59cad3ac9b26243f551e704e7142fca79522"
+                "reference": "2b199e842551a1137640c822f433751a9f402099"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/alchemy-fr/task-manager/zipball/cefd59cad3ac9b26243f551e704e7142fca79522",
-                "reference": "cefd59cad3ac9b26243f551e704e7142fca79522",
+                "url": "https://api.github.com/repos/alchemy-fr/task-manager/zipball/2b199e842551a1137640c822f433751a9f402099",
+                "reference": "2b199e842551a1137640c822f433751a9f402099",
                 "shasum": ""
             },
             "require": {
@@ -609,7 +609,7 @@
             },
             "require-dev": {
                 "monolog/monolog": "~1.0",
-                "phpunit/phpunit": "~3.7",
+                "phpunit/phpunit": "~3.7|^4.0|^5.0",
                 "symfony/console": "~2.3",
                 "symfony/finder": "~2.1"
             },
@@ -646,7 +646,7 @@
                 "parallel",
                 "process"
             ],
-            "time": "2014-02-14 12:39:44"
+            "time": "2016-03-11 12:13:53"
         },
         {
             "name": "alchemy/zippy",
@@ -7337,7 +7337,6 @@
     ],
     "minimum-stability": "stable",
     "stability-flags": {
-        "alchemy/task-manager": 20,
         "imagine/imagine": 20,
         "jms/translation-bundle": 20,
         "neutron/process-manager": 20,

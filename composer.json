@@ -39,7 +39,7 @@
         "alchemy/phpexiftool": "^0.5.0",
         "alchemy/rest-bundle": "^0.0.4",
         "alchemy/symfony-cors": "^0.1.0",
-        "alchemy/task-manager": "2.0.x-dev@dev",
+        "alchemy/task-manager": "^2.0",
         "alchemy/zippy": "^0.3.0",
         "beberlei/assert": "^2.3",
         "dailymotion/sdk": "~1.5",
