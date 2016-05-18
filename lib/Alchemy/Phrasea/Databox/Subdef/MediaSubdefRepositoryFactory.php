@@ -13,6 +13,7 @@ namespace Alchemy\Phrasea\Databox\Subdef;
 use Alchemy\Phrasea\Databox\DataboxBoundRepositoryFactory;
 use Alchemy\Phrasea\Databox\DataboxConnectionProvider;
 use Doctrine\Common\Cache\Cache;
+use Symfony\Component\Stopwatch\Stopwatch;
 
 class MediaSubdefRepositoryFactory implements DataboxBoundRepositoryFactory
 {
@@ -31,11 +32,17 @@ class MediaSubdefRepositoryFactory implements DataboxBoundRepositoryFactory
      */
     private $mediaSubdefFactoryProvider;
 
-    public function __construct(DataboxConnectionProvider $connectionProvider, Cache $cache, callable $mediaSubdefFactoryProvider)
+    /**
+     * @var Stopwatch
+     */
+    private $stopwatch;
+
+    public function __construct(DataboxConnectionProvider $connectionProvider, Cache $cache, callable $mediaSubdefFactoryProvider, Stopwatch $stopwatch = null)
     {
         $this->connectionProvider = $connectionProvider;
         $this->cache = $cache;
         $this->mediaSubdefFactoryProvider = $mediaSubdefFactoryProvider;
+        $this->stopwatch = $stopwatch;
     }
 
     public function createRepositoryFor($databoxId)
@@ -44,6 +51,10 @@ class MediaSubdefRepositoryFactory implements DataboxBoundRepositoryFactory
 
         $dbalRepository = new DbalMediaSubdefDataRepository($connection);
         $dataRepository = new CachedMediaSubdefDataRepository($dbalRepository, $this->cache, sprintf('databox%d:', $databoxId));
+
+        if ($this->stopwatch) {
+            $dataRepository = new TraceableMediaSubdefDataRepository($dataRepository, $this->stopwatch);
+        }
 
         $provider = $this->mediaSubdefFactoryProvider;
         $factory = $provider($databoxId);

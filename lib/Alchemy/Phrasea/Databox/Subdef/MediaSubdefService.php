@@ -13,6 +13,7 @@ namespace Alchemy\Phrasea\Databox\Subdef;
 use Alchemy\Phrasea\Databox\DataboxBoundRepositoryProvider;
 use Alchemy\Phrasea\Model\RecordReferenceInterface;
 use Alchemy\Phrasea\Record\RecordReferenceCollection;
+use Symfony\Component\Stopwatch\Stopwatch;
 
 class MediaSubdefService
 {
@@ -21,9 +22,15 @@ class MediaSubdefService
      */
     private $repositoryProvider;
 
-    public function __construct(DataboxBoundRepositoryProvider $repositoryProvider)
+    /**
+     * @var Stopwatch
+     */
+    private $stopwatch;
+
+    public function __construct(DataboxBoundRepositoryProvider $repositoryProvider, Stopwatch $stopwatch = null)
     {
         $this->repositoryProvider = $repositoryProvider;
+        $this->stopwatch = $stopwatch;
     }
 
     /**
@@ -107,6 +114,12 @@ class MediaSubdefService
      */
     private function reduceRecordReferenceCollection($records, callable $process, $initialValue, array $names = null)
     {
+        $category = 'phraseanet.media_subdef_service';
+
+        if ($this->stopwatch) {
+            $this->stopwatch->start(__METHOD__, $category);
+        }
+
         $records = $this->normalizeRecordCollection($records);
 
         $carry = $initialValue;
@@ -114,10 +127,29 @@ class MediaSubdefService
         foreach ($records->getDataboxIds() as $databoxId) {
             $recordIds = $records->getDataboxRecordIds($databoxId);
 
+            if ($this->stopwatch) {
+                $name = __METHOD__ . '#map';
+                $this->stopwatch->start($name, $category);
+            }
+
             $subdefs = $this->getRepositoryForDatabox($databoxId)
                 ->findByRecordIdsAndNames($recordIds, $names);
 
+            if ($this->stopwatch) {
+                $this->stopwatch->stop($name);
+                $name = __METHOD__ . '#reduce';
+                $this->stopwatch->start($name, $category);
+            }
+
             $carry = $process($carry, $subdefs, $records->getDataboxGroup($databoxId), $databoxId);
+
+            if ($this->stopwatch) {
+                $this->stopwatch->stop($name);
+            }
+        }
+
+        if ($this->stopwatch) {
+            $this->stopwatch->stop(__METHOD__);
         }
 
         return $carry;

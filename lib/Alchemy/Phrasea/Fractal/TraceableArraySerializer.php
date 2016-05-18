@@ -10,52 +10,43 @@
 
 namespace Alchemy\Phrasea\Fractal;
 
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\Stopwatch\Stopwatch;
 
 class TraceableArraySerializer extends ArraySerializer
 {
     /**
-     * @var EventDispatcherInterface
+     * @var Stopwatch
      */
-    private $dispatcher;
+    private $stopwatch;
 
-    public function __construct(EventDispatcherInterface $dispatcher)
+    public function __construct(Stopwatch $stopwatch)
     {
-        $this->dispatcher = $dispatcher;
+        $this->stopwatch = $stopwatch;
     }
 
     public function collection($resourceKey, array $data)
     {
-        /** @var GetSerializationEvent $event */
-        $event = $this->dispatcher->dispatch('fractal.serializer.collection', new GetSerializationEvent($resourceKey, $data));
-
+        $this->stopwatch->start(__METHOD__, 'fractal.serializer');
         $serialization = parent::collection($resourceKey, $data);
-
-        $event->setSerialization($serialization);
+        $this->stopwatch->stop(__METHOD__);
 
         return $serialization;
     }
 
     public function item($resourceKey, array $data)
     {
-        /** @var GetSerializationEvent $event */
-        $event = $this->dispatcher->dispatch('fractal.serializer.item', new GetSerializationEvent($resourceKey, $data));
-
+        $this->stopwatch->start(__METHOD__, 'fractal.serializer');
         $serialization = parent::item($resourceKey, $data);
-
-        $event->setSerialization($serialization);
+        $this->stopwatch->stop(__METHOD__);
 
         return $serialization;
     }
 
     public function null($resourceKey)
     {
-        /** @var GetSerializationEvent $event */
-        $event = $this->dispatcher->dispatch('fractal.serializer.null', new GetSerializationEvent($resourceKey, null));
-
+        $this->stopwatch->start(__METHOD__, 'fractal.serializer');
         $serialization = parent::null($resourceKey);
-
-        $event->setSerialization($serialization);
+        $this->stopwatch->stop(__METHOD__);
 
         return $serialization;
     }

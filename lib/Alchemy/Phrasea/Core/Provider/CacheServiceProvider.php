@@ -11,6 +11,8 @@
 
 namespace Alchemy\Phrasea\Core\Provider;
 
+use Alchemy\Phrasea\Cache\ArrayCache;
+use Alchemy\Phrasea\Cache\ChainCache;
 use Alchemy\Phrasea\Cache\Manager as CacheManager;
 use Silex\Application;
 use Silex\ServiceProviderInterface;

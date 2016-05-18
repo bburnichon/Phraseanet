@@ -274,6 +274,7 @@ class media_Permalink_Adapter implements cache_cacheableInterface
      */
     public static function getMany(Application $app, $subdefs)
     {
+        $app['stopwatch']->start(__METHOD__, 'phraseanet');
         Assertion::allIsInstanceOf($subdefs, media_subdef::class);
 
         $permalinks = [];
@@ -312,6 +313,8 @@ class media_Permalink_Adapter implements cache_cacheableInterface
                 $permalinks[$index] = new self($app, $databox, $subdef, $data[$index]);
             }
         }
+
+        $app['stopwatch']->stop(__METHOD__);
 
         return $permalinks;
     }

@@ -21,10 +21,20 @@ class MediaSubdefServiceProvider implements ServiceProviderInterface
     public function register(Application $app)
     {
         $app['provider.factory.media_subdef'] = $app->protect(function ($databoxId) use ($app) {
-            return function (array $data) use ($app, $databoxId) {
-                $recordReference = RecordReference::createFromDataboxIdAndRecordId($databoxId, $data['record_id']);
+            /** @var \Alchemy\Phrasea\Application $app */
+            $databox = $app->findDataboxById($databoxId);
+            $recordRepository = $databox->getRecordRepository();
 
-                return new \media_subdef($app, $recordReference, $data['name'], false, $data);
+            return function (array $data) use ($app, $recordRepository) {
+                $app['stopwatch']->start('media_subdef_factory#fetchRecord', 'phraseanet');
+                $recordReference = $recordRepository->find($data['record_id']);
+                $app['stopwatch']->stop('media_subdef_factory#fetchRecord');
+
+                $app['stopwatch']->start('media_subdef_factory#build', 'phraseanet');
+                $media_subdef = new \media_subdef($app, $recordReference, $data['name'], false, $data);
+                $app['stopwatch']->stop('media_subdef_factory#build');
+
+                return $media_subdef;
             };
         });
 
@@ -32,13 +42,13 @@ class MediaSubdefServiceProvider implements ServiceProviderInterface
             $connectionProvider = new DataboxConnectionProvider($app['phraseanet.appbox']);
             $factoryProvider = $app['provider.factory.media_subdef'];
 
-            $repositoryFactory = new MediaSubdefRepositoryFactory($connectionProvider, $app['cache'], $factoryProvider);
+            $repositoryFactory = new MediaSubdefRepositoryFactory($connectionProvider, $app['cache'], $factoryProvider, isset($app['stopwatch']) ? $app['stopwatch'] : null);
 
             return new DataboxBoundRepositoryProvider($repositoryFactory);
         });
 
         $app['service.media_subdef'] = $app->share(function (Application $app) {
-            return new MediaSubdefService($app['provider.repo.media_subdef']);
+            return new MediaSubdefService($app['provider.repo.media_subdef'], isset($app['stopwatch']) ? $app['stopwatch'] : null);
         });
     }
 

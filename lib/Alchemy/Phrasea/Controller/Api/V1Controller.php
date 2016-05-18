@@ -1057,6 +1057,9 @@ class V1Controller extends Controller
      */
     public function searchAction(Request $request)
     {
+        $stopwatch = $this->app['stopwatch'];
+
+        $stopwatch->start(__METHOD__ . '#init', 'phraseanet');
         $subdefTransformer = new SubdefTransformer($this->app['acl'], $this->getAuthenticatedUser(), new PermalinkTransformer());
         $technicalDataTransformer = new TechnicalDataTransformer();
         $recordTransformer = new RecordTransformer($subdefTransformer, $technicalDataTransformer);
@@ -1087,18 +1090,26 @@ class V1Controller extends Controller
         ]);
         $includeResolver = new IncludeResolver($transformerResolver);
 
-        $fractal = new \League\Fractal\Manager();
-        $fractal->setSerializer(new TraceableArraySerializer($this->app['dispatcher']));
+        $fractal = new \Alchemy\Phrasea\Fractal\Manager($this->app['stopwatch']);
+        $fractal->setSerializer(new TraceableArraySerializer($this->app['stopwatch']));
         $fractal->parseIncludes($this->resolveSearchIncludes($request));
 
+        $stopwatch->stop(__METHOD__ . '#init');
+        $stopwatch->start(__METHOD__ . '#doSearch', 'phraseanet');
         $result = $this->doSearch($request);
+        $stopwatch->stop(__METHOD__ . '#doSearch');
+
+        $stopwatch->start(__METHOD__ . '#buildSearchView', 'phraseanet');
         $searchView = $this->buildSearchView(
             $result,
             $includeResolver->resolve($fractal),
             $this->resolveSubdefUrlTTL($request)
         );
+        $stopwatch->stop(__METHOD__ . '#buildSearchView');
 
+        $stopwatch->start(__METHOD__ . '#toArray', 'phraseanet');
         $ret = $fractal->createData(new Item($searchView, $searchTransformer))->toArray();
+        $stopwatch->stop(__METHOD__ . '#toArray');
 
         return Result::create($request, $ret)->createResponse();
     }
@@ -1159,6 +1170,7 @@ class V1Controller extends Controller
         $records = new RecordCollection();
         $stories = new RecordCollection();
 
+        $this->app['stopwatch']->start('searchRecords');
         foreach ($references->toRecords($this->getApplicationBox()) as $record) {
             if ($record->isStory()) {
                 $stories[$record->getId()] = $record;
@@ -1166,6 +1178,7 @@ class V1Controller extends Controller
                 $records[$record->getId()] = $record;
             }
         }
+        $this->app['stopwatch']->stop('searchRecords');
 
         $resultView = new SearchResultView($result);
 
@@ -1310,8 +1323,11 @@ class V1Controller extends Controller
      */
     private function buildSubdefsViews($references, array $names = null, $urlTTL)
     {
+        $this->app['stopwatch']->start(__METHOD__, 'phraseanet');
+        $this->app['stopwatch']->start(__METHOD__ . '#fetchSubdefs', 'phraseanet');
         $subdefGroups = $this->app['service.media_subdef']
             ->findSubdefsByRecordReferenceFromCollection($references, $names);
+        $this->app['stopwatch']->stop(__METHOD__ . '#fetchSubdefs');
 
         $fakeSubdefs = [];
 
@@ -1362,6 +1378,8 @@ class V1Controller extends Controller
 
             $reorderedGroups[$index] = $reordered;
         }
+
+        $this->app['stopwatch']->stop(__METHOD__);
 
         return $reorderedGroups;
     }
